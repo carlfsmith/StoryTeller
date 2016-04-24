@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import com.example.scene.db.Scene;
 import com.example.scene.db.SceneDBHelper;
@@ -26,9 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements AdapterView.OnItemLongClickListener, ExpandableListView.OnGroupClickListener,
-        ExpandableListView.OnChildClickListener{
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener{
 
     private ExpandableListView expandableListView;
     private ExpandListAdapter expandListAdapter;
@@ -66,8 +65,6 @@ public class MainActivity extends AppCompatActivity
         //initialize exp list view and related objects
         expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
         expandableListView.setOnItemLongClickListener(this);
-        expandableListView.setOnGroupClickListener(this);
-        expandableListView.setOnChildClickListener(this);
         LayoutInflater inflater = getLayoutInflater();
         ViewGroup header = (ViewGroup) inflater.inflate(R.layout.main_header, expandableListView, false);
         expandableListView.addHeaderView(header, null, false);
@@ -114,31 +111,12 @@ public class MainActivity extends AppCompatActivity
         expandListAdapter.notifyDataSetChanged();
     }
 
-    private void createHeader(LayoutInflater inflater, int id){
-        //because appHead is not part of the header array, set below to -1
-        if(id == R.id.appHeader){
-            ExpandListAdapter.lastClickedHeadPos = -1;
-        }
-
-        View popup = inflater.inflate(R.layout.new_scene_popup, null);
-        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+    private void createPopup(View popup, DialogInterface.OnClickListener listener){
         ContextThemeWrapper ctw = new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle);
         AlertDialog.Builder aDBuilder = new AlertDialog.Builder(ctw);
         aDBuilder.setView(popup);
         //can't do this as switch option because AlertDialog has a seperate activity
-        aDBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                //we're inserting into the header AFTER the one our options are under
-                int pos = ExpandListAdapter.lastClickedHeadPos + 1;
-                //create new scene
-                Scene scene = new Scene(eText.getText().toString());
-                System.out.println("HEAD POSITION: " + pos);
-                //insert new scene into array and database
-                treeBuilder.insertHeader(expandListAdapter, pos, scene);
-                updateUI();
-            }
-        });
+        aDBuilder.setPositiveButton("Done", listener);
         aDBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {}
@@ -163,78 +141,100 @@ public class MainActivity extends AppCompatActivity
     //set from XML
     public void onClicked(View v){
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popup = inflater.inflate(R.layout.popup, null);
+        //get the holder of the user entered text
+        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+
         switch(v.getId()){
             case R.id.new_header_btn:
                 //Add new header
-                createHeader(inflater, R.id.new_header_btn);
+                //create popup with unique positive button
+                createPopup(popup, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //we're inserting into the header AFTER the one our options are under
+                        int headPos = ExpandListAdapter.lastClickedHeadPos + 1;
+                        //create new scene with trimmed user input
+                        Scene scene = new Scene(eText.getText().toString().trim());
+                        System.out.println("HEAD POSITION: " + headPos);
+                        //insert new scene into array and database
+                        treeBuilder.insertHeader(expandListAdapter, headPos, scene);
+                        updateUI();
+                    }
+                });
 
                 break;
             case R.id.new_subhead_btn:
                 //Add new subHeader
-                View popupAlt = inflater.inflate(R.layout.new_scene_popup, null);
-                final EditText eText2 = (EditText)popupAlt.findViewById(R.id.popup_add_text);
-                ContextThemeWrapper ctw2 = new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle);
-                AlertDialog.Builder aDBuilder2 = new AlertDialog.Builder(ctw2);
-                aDBuilder2.setView(popupAlt);
-                //can't do this as switch option because AlertDialog has a seperate activity
-                aDBuilder2.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                //change popup title from default
+                TextView textView2 = (TextView)popup.findViewById(R.id.textView);
+                textView2.setText("New Branch");
+                //create popup with unique positive button
+                createPopup(popup, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         //we're inserting into index 1 under headPos
                         int headPos = ExpandListAdapter.lastClickedHeadPos;
-                        //create new scene
-                        Scene scene = new Scene(eText2.getText().toString());
+                        //create new scene with trimmed user input
+                        Scene scene = new Scene(eText.getText().toString().trim());
                         System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertSubHeader(expandListAdapter, headPos, scene);
                         updateUI();
                     }
                 });
-                aDBuilder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {}
-                });
-                dialog = aDBuilder2.create();
-                dialog.show();
-                //stylize alert dialog button text
-                Button posBtn2 = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-                Button negBtn2 = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-                posBtn2.setTextColor(Color.parseColor("#469C5A"));
-                negBtn2.setTextColor(Color.parseColor("#469C5A"));
-                posBtn2.setTextSize(20);
-                negBtn2.setTextSize(20);
 
-                //switch over to new subHead scene branch?
-
-                //collapse eListView
-                expandListAdapter.collapseLastGroup();
+                //switch over to new subHead scene branch or no?----------------------------------------------------------<<<<<
 
                 break;
 
             case R.id.appHeader:
                 //Add new header underneath appHeader
-                createHeader(inflater, R.id.appHeader);
+                //because appHead is not part of the header array, set below to -1
+                ExpandListAdapter.lastClickedHeadPos = -1;
+                //create popup with same button as first case
+                createPopup(popup, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //we're inserting into the header AFTER the one our options are under
+                        int headPos = ExpandListAdapter.lastClickedHeadPos + 1;
+                        //create new scene with trimmed user input
+                        Scene scene = new Scene(eText.getText().toString().trim());
+                        System.out.println("HEAD POSITION: " + headPos);
+                        //insert new scene into array and database
+                        treeBuilder.insertHeader(expandListAdapter, headPos, scene);
+                        updateUI();
+                    }
+                });
 
                 break;
         }
     }
 
     @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        log("onItemLongClick");
+    public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
+        //edit scene entry
+        final Scene s = (Scene)parent.getItemAtPosition(position);
+
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popup = inflater.inflate(R.layout.popup, null);
+        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+        eText.setText(s.getContent());
+        //change popup title from default
+        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        textView.setText("Edit Scene");
+        //create popup with unique positive button
+        createPopup(popup, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                System.out.println("HEAD POSITION: " + position);
+                //edit scene in array and database
+                treeBuilder.editScene(s, eText.getText().toString());
+                updateUI();
+            }
+        });
+
         //did not consume the following onClick callback (prevent doing two types of clicks sequentially)
         return true;
-    }
-
-    @Override
-    public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-        log("onGroupClick");
-        return false;
-    }
-
-    @Override
-    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-        log("onChildClick");
-        return false;
     }
 }

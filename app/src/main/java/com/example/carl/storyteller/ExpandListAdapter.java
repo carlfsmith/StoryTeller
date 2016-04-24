@@ -15,7 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by Carl on 4/17/2016.
+ * Created by Carl F. Smith on 4/17/2016.
+ *
+ * Expands the listAdapter to handle changing views on group or child-view calls
  *
  */
 public class ExpandListAdapter extends BaseExpandableListAdapter {
@@ -28,7 +30,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
     private int lastGroupToExpand;
 
     public static int lastClickedHeadPos;
-    public static int newSubHeadPos;
+    public static int lastClickedSubHeadPos;
 
     public static int REGULAR = 0;
     public static int NEW = 1;
@@ -39,7 +41,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         this.context = context;
         this.headers = headers;
         this.assignSub = assignSub;
-        this.newSubHeadPos = -1;   //no new header position as default
+        this.lastClickedSubHeadPos = -1;   //no new header position as default
         this.inflater = (LayoutInflater)this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.expandableListView = eLView;
     }
@@ -200,7 +202,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         if(scene.getId() == -1){
             //set the position in the arrays for the new scene view
             lastClickedHeadPos = groupPosition;
-            newSubHeadPos = childPosition;
+            lastClickedSubHeadPos = childPosition;
 
             toInflate = R.layout.option_header;
             //get our view if null and then inflate

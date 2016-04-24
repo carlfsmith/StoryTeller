@@ -2,9 +2,6 @@ package com.example.scene.db;
 
 import android.provider.BaseColumns;
 
-/**
- * Created by Carl on 4/18/2016.
- */
 public class SceneContact {
     public static final String DB_NAME = "com.example.scene.db.sceneStorage";
     public static final int DB_VERSION = 3;

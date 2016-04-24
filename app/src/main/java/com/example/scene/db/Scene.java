@@ -12,9 +12,6 @@ import java.util.List;
 
 import static android.provider.BaseColumns._ID;
 
-/**
- * Created by Carl on 4/17/2016.
- */
 public class Scene implements Serializable{
 
     private String content; //user story scene text
@@ -85,7 +82,7 @@ public class Scene implements Serializable{
 
     public void addParent(Scene parent){
         if(parent != null) {
-            Integer id = new Integer(parent.getId());
+            Integer id = parent.getId();
             this.parents.remove(id);
             this.parents.add(id);
         }
@@ -93,7 +90,7 @@ public class Scene implements Serializable{
 
     public void removeParent(Scene parent){
         if(parent != null) {
-            Integer id = new Integer(parent.getId());
+            Integer id = parent.getId();
             this.parents.remove(id);
         }
     }
@@ -108,7 +105,7 @@ public class Scene implements Serializable{
 
     public void addChild(Scene child){
         if(child != null){
-            Integer id = new Integer(child.getId());
+            Integer id = child.getId();
             this.children.remove(id);
             this.children.add(id);
         }
@@ -116,7 +113,7 @@ public class Scene implements Serializable{
 
     public void removeChild(Scene child){
         if(child != null){
-            Integer id = new Integer(child.getId());
+            Integer id = child.getId();
             this.children.remove(id);
         }
     }
@@ -134,7 +131,7 @@ public class Scene implements Serializable{
     }
 
     public String parentsToString(){
-        String str = null;
+        String str;
         if(this.parents.size() > 0){
             Iterator<Integer> it = this.parents.iterator();
             str = it.next().toString();
@@ -149,7 +146,7 @@ public class Scene implements Serializable{
     }
 
     public String childrenToString(){
-        String str = null;
+        String str;
         if(this.children.size() > 0){
             Iterator<Integer> it = this.children.iterator();
             str = it.next().toString();
@@ -166,8 +163,8 @@ public class Scene implements Serializable{
     public void setParentsFromString(String str){
         if(!str.isEmpty() && this.parents.isEmpty()) {
             String[] strArr = str.split(",");
-            for (int i = 0; i < strArr.length; i++){
-                this.parents.add(new Integer(strArr[i]));
+            for (String aStrArr : strArr) {
+                this.parents.add(Integer.valueOf(aStrArr));
             }
         }
         else if(!this.parents.isEmpty()){
@@ -178,8 +175,8 @@ public class Scene implements Serializable{
     public void setChildrenFromString(String str){
         if(!str.isEmpty() && this.children.isEmpty()) {
             String[] strArr = str.split(",");
-            for (int i = 0; i < strArr.length; i++){
-                this.children.add(new Integer(strArr[i]));
+            for (String aStrArr : strArr) {
+                this.children.add(Integer.valueOf(aStrArr));
             }
         }
         else if(!this.children.isEmpty()){

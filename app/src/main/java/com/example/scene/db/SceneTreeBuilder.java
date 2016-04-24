@@ -3,6 +3,8 @@ package com.example.scene.db;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 
 import com.example.carl.storyteller.ExpandListAdapter;
 
@@ -69,7 +71,7 @@ public class SceneTreeBuilder {
         * header's children.
          */
 
-        Cursor cursor = null;
+        Cursor cursor;
         //this array will change size as we decend the "tree" -------------------------Consider converting to stack if time allows
         List<Integer> childrenToCheck = new ArrayList<>(this.root.getChildren());
         System.out.println("%%%%%%%%Children IDs to Check from Root: " + childrenToCheck.toString());
@@ -218,7 +220,7 @@ public class SceneTreeBuilder {
         }
 
         //update parent
-        this.dbHelper.update(
+        this.dbHelper.updateById(
                 this.db,
                 parent.getId(),
                 null, parent.parentsToString(),
@@ -226,7 +228,7 @@ public class SceneTreeBuilder {
         );
         //update migraged child, if any
         if(migratingChild != null) {
-            this.dbHelper.update(
+            this.dbHelper.updateById(
                     this.db, migratingChild.getId(),
                     null, migratingChild.parentsToString(),
                     migratingChild.childrenToString()
@@ -286,7 +288,7 @@ public class SceneTreeBuilder {
         parent.addChild(newSubHeader);
 
         //update the parent
-        this.dbHelper.update(
+        this.dbHelper.updateById(
                 this.db,
                 parent.getId(),
                 null, parent.parentsToString(),
@@ -336,10 +338,6 @@ public class SceneTreeBuilder {
 
     }
 
-    public void search(Scene scene){
-
-    }
-
     public void updateEList(List<String> headers, List<List<String>> subHeaders,
                             HashMap<String, List<String>> assignSu, Scene newHead)
     {
@@ -349,6 +347,13 @@ public class SceneTreeBuilder {
         * by selecting left-most child scenes and the relative subHeaders will be determined by each
         * header's siblings.
         * */
+    }
+
+    public void editScene(Scene toEdit, String content){
+        //reference scene and set trimmed text (remove leading and trailing whitespace)
+        toEdit.setContent(content.trim());
+        //store in database (only store change to content)
+        this.dbHelper.updateById(this.db, toEdit.getId(), toEdit.getContent(), null, null);
     }
 
     private void log(String s){

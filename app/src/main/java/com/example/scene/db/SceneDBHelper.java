@@ -11,7 +11,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Carl on 4/18/2016.
+ * Created by Carl F. Smith on 4/18/2016.
+ *
+ * SceneDBHeelper assists in injecting data into the database.
+ *
  */
 public class SceneDBHelper extends SQLiteOpenHelper {
     private static final String TAG = "DB_LIST";
@@ -33,13 +36,6 @@ public class SceneDBHelper extends SQLiteOpenHelper {
 
     public void clearTable(SQLiteDatabase db){
         db.execSQL("DROP TABLE IF EXISTS " + SceneContact.TABLE);
-    }
-
-    public int getTableCount(SQLiteDatabase db){
-        Cursor count = db.rawQuery("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'", null);
-        count.moveToFirst();
-        int tableCount = count.getInt(0);
-        return tableCount;
     }
 
     @Override
@@ -64,19 +60,21 @@ public class SceneDBHelper extends SQLiteOpenHelper {
     }
 
     //used to update the database table
-    public void update(SQLiteDatabase db, int id, String sceneText, String parents, String children){
-        ContentValues cValues = new ContentValues();
-        if(sceneText != null){
-            cValues.put(SceneContact.Columns.SCENE, sceneText);
-        }
-        if(parents != null){
-            cValues.put(SceneContact.Columns.PARENTS, parents);
-        }
-        if(children != null){
-            cValues.put(SceneContact.Columns.CHILDREN, children);
-        }
+    public void updateById(SQLiteDatabase db, int id, String sceneText, String parents, String children){
+        if(id > 0){
+            ContentValues cValues = new ContentValues();
+            if(sceneText != null){
+                cValues.put(SceneContact.Columns.SCENE, sceneText);
+            }
+            if(parents != null){
+                cValues.put(SceneContact.Columns.PARENTS, parents);
+            }
+            if(children != null){
+                cValues.put(SceneContact.Columns.CHILDREN, children);
+            }
 
-        db.update(SceneContact.TABLE, cValues, SceneContact.Columns._ID + "=" + id, null);
+            db.update(SceneContact.TABLE, cValues, SceneContact.Columns._ID + "=" + id, null);
+        }
     }
 
     //used to get results of table query
@@ -96,15 +94,15 @@ public class SceneDBHelper extends SQLiteOpenHelper {
 
     //used to get all entrees with provided IDs
     public Cursor searchForIDs(SQLiteDatabase db, List<Integer> ids){
-        String selection = null;
+        String selection;
         String idTag = SceneContact.Columns._ID;
 
         Iterator<Integer> it = ids.iterator();
         //build selection string
-        int idNum = it.next().intValue();
-        selection = new String(idTag + "=" + idNum);
+        int idNum = it.next();
+        selection = idTag + "=" + idNum;
         while(it.hasNext()){
-            idNum = it.next().intValue();
+            idNum = it.next();
             selection = selection + " OR " + idTag + "=" + idNum;
         }
 
