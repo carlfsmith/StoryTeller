@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="#293129">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:text="New Scene"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/btn_shape"
+            android:shadowColor="#A8A8A8"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:layout_weight="1"
+            android:id="@+id/new_header_btn"
+            android:textStyle="bold"
+            android:onClick="onClicked" />
+
+        <Button
+            android:text="New Branch"
+            android:textColor="#FFFFFF"
+            android:textSize="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/btn_shape"
+            android:shadowColor="#A8A8A8"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:layout_weight="1"
+            android:id="@+id/new_subhead_btn"
+            android:textStyle="bold"
+            android:onClick="onClicked" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,255 @@
+package com.example.carl.storyteller;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.TextView;
+
+import com.example.scene.db.Scene;
+
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ * Created by Carl on 4/17/2016.
+ *
+ */
+public class ExpandListAdapter extends BaseExpandableListAdapter {
+    private List<Scene> headers;
+    private HashMap<Scene, List<Scene>> assignSub;
+    private Context context;
+    private LayoutInflater inflater;
+    private ExpandableListView expandableListView;
+
+    private int lastGroupToExpand;
+
+    public static int lastClickedHeadPos;
+    public static int newSubHeadPos;
+
+    public static int REGULAR = 0;
+    public static int NEW = 1;
+
+    private final static String TAG = "EXPANDABLELIST_ADAPTER";
+
+    ExpandListAdapter(Context context, List<Scene> headers, HashMap<Scene, List<Scene>> assignSub, ExpandableListView eLView){
+        this.context = context;
+        this.headers = headers;
+        this.assignSub = assignSub;
+        this.newSubHeadPos = -1;   //no new header position as default
+        this.inflater = (LayoutInflater)this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.expandableListView = eLView;
+    }
+
+    @Override
+    public void onGroupExpanded(int groupPosition) {
+        //expand a group and collapse old group
+        if(groupPosition != lastGroupToExpand){
+            expandableListView.collapseGroup(lastGroupToExpand);
+        }
+
+        super.onGroupExpanded(groupPosition);
+        lastGroupToExpand = groupPosition;
+    }
+
+    public int getLastGroupToExpand(){
+        return this.lastGroupToExpand;
+    }
+
+    @Override
+    public int getChildType(int groupPosition, int childPosition) {
+        //flips an internal switch to alert the adapter that a new view is coming into the list
+        int id = this.getChild(groupPosition,childPosition).getId();
+        if(id != -1){
+            return this.REGULAR;
+        }
+        else{
+            return this.NEW;
+        }
+    }
+
+    @Override
+    public int getChildTypeCount() {
+        //number of types of views
+        return 2;
+    }
+
+    //used to select layout type
+    @Override
+    public int getGroupType(int groupPosition) {
+        //flips an internal switch to alert the adapter that a new view is coming into the list
+        int id = this.getGroup(groupPosition).getId();
+        if(id != -1){
+            return this.REGULAR;
+        }
+        else{
+            return this.NEW;
+        }
+    }
+
+    @Override
+    public int getGroupTypeCount() {
+        //number of types of views
+        return 2;
+    }
+
+    class ViewHolder {
+        TextView textView;
+        View divider;
+    }
+
+    @Override
+    //parents size
+    public int getGroupCount() {
+        return this.headers.size();
+    }
+
+    @Override
+    //get children size
+    public int getChildrenCount(int groupPosition) {
+        List<Scene> subH = this.assignSub.get(this.headers.get(groupPosition));
+        //prevent crash on null list object when header has no subHeaders
+        if(subH != null) {
+            return subH.size();
+        }
+        else{
+            return 0;
+        }
+    }
+
+    public List<Scene> getGroups(){
+        return this.headers;
+    }
+
+    @Override
+    //get header text
+    public Scene getGroup(int groupPosition) {
+        return this.headers.get(groupPosition);
+    }
+
+    public List<Scene> getChildren(int groupPosition) {
+        return this.assignSub.get(this.headers.get(groupPosition));
+    }
+
+    @Override
+    //get subheader text at header
+    public Scene getChild(int groupPosition, int childPosition) {
+        return this.assignSub.get(this.headers.get(groupPosition)).get(childPosition);
+    }
+
+    @Override
+    public long getGroupId(int groupPosition) {
+        return groupPosition;
+    }
+
+    @Override
+    public long getChildId(int groupPosition, int childPosition) {
+        return childPosition;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return false;
+    }
+
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        Scene scene = getGroup(groupPosition);
+        int toInflate;
+        ViewHolder holder;
+
+        toInflate = R.layout.header_display;
+        //get our view if null and then inflate
+        if(convertView == null){
+            convertView = inflater.inflate(toInflate, null);
+            holder = new ViewHolder();
+            holder.textView = (TextView)convertView.findViewById(R.id.header_entry);
+            holder.divider = convertView.findViewById(R.id.header_divider);
+            convertView.setTag(holder);
+        }
+        else{ //get the textView we stored in tag for faster access to textView
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        //bind data
+        holder.textView.setText(scene.getContent());
+        //adjust divider sizes
+        if(this.headers.get(groupPosition) != null){
+            //show small header divider when there are no subHeaders (1st doesn't count)
+            if(this.getChildren(groupPosition).size() <= 1){
+                holder.divider.getLayoutParams().height = getDp(context.getResources().getDimension(R.dimen.divider_empty_height));
+            }
+            else{//show large header divider when there are subHeaders
+                holder.divider.getLayoutParams().height = getDp(context.getResources().getDimension(R.dimen.divider_filled_height));
+            }
+        }
+
+        return convertView;
+    }
+
+    @Override
+    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        Scene scene = getChild(groupPosition, childPosition);
+        int toInflate;
+        ViewHolder holder;
+
+        //set add inset scene option view if -1 scene flag is set (scene has no real database ID)
+        if(scene.getId() == -1){
+            //set the position in the arrays for the new scene view
+            lastClickedHeadPos = groupPosition;
+            newSubHeadPos = childPosition;
+
+            toInflate = R.layout.option_header;
+            //get our view if null and then inflate
+            if(convertView == null){
+                convertView = inflater.inflate(toInflate, null);
+            }
+        }
+        else{//otherwise we're going to inflate the default view
+            toInflate = R.layout.subheader_display;
+            //get our view if null and then inflate
+            if(convertView == null){
+                convertView = inflater.inflate(toInflate, null);
+                holder = new ViewHolder();
+                holder.textView = (TextView)convertView.findViewById(R.id.subheader_entry);
+                holder.divider = null;
+                convertView.setTag(holder);
+            }
+            else{ //get the textView we stored in tag for faster access to textView
+                holder = (ViewHolder) convertView.getTag();
+            }
+            //bind data
+            holder.textView.setText(scene.getContent());
+        }
+
+        return convertView;
+    }
+
+    @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition) {
+        return true;
+    }
+
+    private int getDp(float px){
+        return (int)(px / context.getResources().getDisplayMetrics().density);
+    }
+
+    public void addToGroup(Scene group){
+        this.headers.add(group);
+    }
+
+    public void setHeadToChildren(int groupPosition, List<Scene> children){
+        this.assignSub.put(getGroup(groupPosition), children);
+    }
+
+    public void collapseLastGroup(){
+        expandableListView.collapseGroup(lastGroupToExpand);
+    }
+
+    private void log(String s){
+        Log.d(TAG, s);
+    }
+}
