@@ -61,19 +61,34 @@ public class SceneTreeBuilder {
         this.dBTEST();
     }
 
-    public void load(ExpandListAdapter eLAdapter){
+    public void load(ExpandListAdapter eLAdapter, int groupPos, int childPos){
         /*
-        * This method is used to set the first header and subHeader lists for viewing. Headers are
+        * This method is used to update the header and subHeader lists for viewing. Headers are
         * taken by simply getting the leftmost children from the database (lowest children array
         * index being the "leftmost"). Subheaders are determined by header siblings, so when we
         * start, we'll get the root at SQL ID = 1 and then query for its children, store the
         * leftmost as a header and the rest as associated subheaders. Repeat process with each new
-        * header's children.
+        * header's children. The relativeRootPos is the point from where new scenes will be loaded
+        * from the DB -it will be set to null if we're loading from the actual root.
          */
+
+        Scene relativeRoot;
+        if(childPos < 0){
+            relativeRoot = this.root;
+        }
+        else{
+            //swap header and subHeader
+            eLAdapter.swapHeaderWithSubHeader(groupPos, childPos);
+            //remove all hashes for elements in list after groupPos then remove subArray at groupPos + 1
+            eLAdapter.trimSubList(groupPos + 1);
+            //set relativeRoot to new header at groupPos
+            relativeRoot = eLAdapter.getGroup(groupPos);
+            log("RelativeRoot content:" + relativeRoot.getContent());
+        }
 
         Cursor cursor;
         //this array will change size as we decend the "tree" -------------------------Consider converting to stack if time allows
-        List<Integer> childrenToCheck = new ArrayList<>(this.root.getChildren());
+        List<Integer> childrenToCheck = new ArrayList<>(relativeRoot.getChildren());
         System.out.println("%%%%%%%%Children IDs to Check from Root: " + childrenToCheck.toString());
 
         //query for children
@@ -336,17 +351,6 @@ public class SceneTreeBuilder {
 
     public void delete(Scene scene){
 
-    }
-
-    public void updateEList(List<String> headers, List<List<String>> subHeaders,
-                            HashMap<String, List<String>> assignSu, Scene newHead)
-    {
-        /*
-        * to update the headers and subHeaders we will trim the header array at newHead's sibling
-        * and trim all relative subHeader items. The new header sub-array items will be determined
-        * by selecting left-most child scenes and the relative subHeaders will be determined by each
-        * header's siblings.
-        * */
     }
 
     public void editScene(Scene toEdit, String content){

@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener{
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener,
+        ExpandableListView.OnChildClickListener{
 
     private ExpandableListView expandableListView;
     private ExpandListAdapter expandListAdapter;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //initialize exp list view and related objects
         expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
         expandableListView.setOnItemLongClickListener(this);
+        expandableListView.setOnChildClickListener(this);
         LayoutInflater inflater = getLayoutInflater();
         ViewGroup header = (ViewGroup) inflater.inflate(R.layout.main_header, expandableListView, false);
         expandableListView.addHeaderView(header, null, false);
@@ -75,7 +77,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         //initialize treeBuilder
         treeBuilder = new SceneTreeBuilder(sceneDBHelper, sqlDB);
-        treeBuilder.load(expandListAdapter);
+        //-1, -1 signifies that we'll be using the root scene as a relative root (it's not part of our list)
+        treeBuilder.load(expandListAdapter, -1, -1);
 
         updateUI();
     }
@@ -234,7 +237,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
-        //did not consume the following onClick callback (prevent doing two types of clicks sequentially)
+        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
         return true;
+    }
+
+    @Override
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        //get reference to subHeader and load new subList
+        log("Child Clicked!");
+        treeBuilder.load(expandListAdapter, groupPosition, childPosition);
+        updateUI();
+        return false;
     }
 }

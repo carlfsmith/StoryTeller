@@ -251,6 +251,22 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         expandableListView.collapseGroup(lastGroupToExpand);
     }
 
+    public void swapHeaderWithSubHeader(int groupPosition, int childPosition){
+        Scene subScene = getChild(groupPosition, childPosition);
+        Scene header = getGroup(groupPosition);
+        Scene temp = new Scene(subScene);
+        subScene.set(header);
+        header.set(temp);
+    }
+
+    public void trimSubList(int startPos){
+        //start at the last item and end at startPos
+        for(int i = headers.size() - 1; i >= startPos; i--){
+            assignSub.remove(getGroup(i));
+            headers.remove(i);
+        }
+    }
+
     private void log(String s){
         Log.d(TAG, s);
     }
