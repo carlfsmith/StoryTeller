@@ -254,9 +254,21 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
     public void swapHeaderWithSubHeader(int groupPosition, int childPosition){
         Scene subScene = getChild(groupPosition, childPosition);
         Scene header = getGroup(groupPosition);
-        Scene temp = new Scene(subScene);
-        subScene.set(header);
-        header.set(temp);
+        List<Scene> subScenes = getChildren(groupPosition);
+        //remove hash
+        assignSub.remove(header);
+        //remove subScene from subLists and inject header
+        subScenes.remove(childPosition);
+        subScenes.add(childPosition, header);
+        //remove header from array and insert subscene
+        this.headers.remove(groupPosition);
+        this.headers.add(groupPosition, subScene);
+        //hash
+        assignSub.put(subScene, subScenes);
+
+//        Scene temp = new Scene(subScene);
+//        subScene.set(header);
+//        header.set(temp);
     }
 
     public void trimSubList(int startPos){
@@ -265,6 +277,15 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
             assignSub.remove(getGroup(i));
             headers.remove(i);
         }
+    }
+
+    public void removeGroup(int groupPosition){
+        assignSub.remove(getGroup(groupPosition));
+        headers.remove(groupPosition);
+    }
+
+    public void removeChild(int groupPosition, int childPosition){
+        getChildren(groupPosition).remove(childPosition);
     }
 
     private void log(String s){

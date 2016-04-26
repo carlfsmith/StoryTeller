@@ -59,22 +59,9 @@ public class SceneDBHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + SceneContact.TABLE);
     }
 
-    //used to update the database table
-    public void updateById(SQLiteDatabase db, int id, String sceneText, String parents, String children){
-        if(id > 0){
-            ContentValues cValues = new ContentValues();
-            if(sceneText != null){
-                cValues.put(SceneContact.Columns.SCENE, sceneText);
-            }
-            if(parents != null){
-                cValues.put(SceneContact.Columns.PARENTS, parents);
-            }
-            if(children != null){
-                cValues.put(SceneContact.Columns.CHILDREN, children);
-            }
-
-            db.update(SceneContact.TABLE, cValues, SceneContact.Columns._ID + "=" + id, null);
-        }
+    public void delete(SQLiteDatabase db, int id){
+        String ID = SceneContact.Columns._ID;
+        db.delete(SceneContact.TABLE, ID+"="+id,null);
     }
 
     //used to get results of table query
@@ -107,6 +94,24 @@ public class SceneDBHelper extends SQLiteOpenHelper {
         }
 
         return db.query(SceneContact.TABLE, null, selection, null, null, null, null);
+    }
+
+    //used to update the database table
+    public void updateById(SQLiteDatabase db, int id, String sceneText, String parents, String children){
+        if(id > 0){
+            ContentValues cValues = new ContentValues();
+            if(sceneText != null){
+                cValues.put(SceneContact.Columns.SCENE, sceneText);
+            }
+            if(parents != null){
+                cValues.put(SceneContact.Columns.PARENTS, parents);
+            }
+            if(children != null){
+                cValues.put(SceneContact.Columns.CHILDREN, children);
+            }
+
+            db.update(SceneContact.TABLE, cValues, SceneContact.Columns._ID + "=" + id, null);
+        }
     }
 
     private void log(String s){

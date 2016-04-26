@@ -122,7 +122,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         aDBuilder.setPositiveButton("Done", listener);
         aDBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {}
+            public void onClick(DialogInterface dialog, int id) {
+                //collapse eListView
+                expandListAdapter.collapseLastGroup();
+            }
+        });
+        aDBuilder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                //collapse eListView
+                expandListAdapter.collapseLastGroup();
+            }
         });
         dialog = aDBuilder.create();
         dialog.show();
@@ -133,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         negBtn.setTextColor(Color.parseColor("#469C5A"));
         posBtn.setTextSize(20);
         negBtn.setTextSize(20);
-        //collapse eListView
-        expandListAdapter.collapseLastGroup();
     }
 
     private void log(String s){
@@ -162,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertHeader(expandListAdapter, headPos, scene);
+                        //collapse eListView
+                        expandListAdapter.collapseLastGroup();
                         updateUI();
                     }
                 });
@@ -183,6 +193,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertSubHeader(expandListAdapter, headPos, scene);
+                        //load subHeader scene
+                        int subPos = expandListAdapter.getChildrenCount(headPos) - 1;
+                        treeBuilder.load(expandListAdapter, headPos, subPos);
+                        //collapse eListView
+                        expandListAdapter.collapseLastGroup();
                         updateUI();
                     }
                 });
@@ -211,6 +226,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
 
                 break;
+
+            case R.id.delete_btn:
+                treeBuilder.deleteHeader(expandListAdapter, ExpandListAdapter.lastClickedHeadPos);
+                updateUI();
         }
     }
 
@@ -244,8 +263,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
         //get reference to subHeader and load new subList
-        log("Child Clicked!");
         treeBuilder.load(expandListAdapter, groupPosition, childPosition);
+        expandListAdapter.collapseLastGroup();
         updateUI();
         return false;
     }

@@ -16,7 +16,7 @@
         android:textColor="@color/abc_primary_text_material_dark"
         android:paddingTop="120dp"
         android:paddingLeft="35dp"
-        android:textSize="32dp"
+        android:textSize="38dp"
         android:onClick="onClicked" />
 
 </LinearLayout>

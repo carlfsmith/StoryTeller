@@ -66,10 +66,10 @@ public class SceneTreeBuilder {
         * This method is used to update the header and subHeader lists for viewing. Headers are
         * taken by simply getting the leftmost children from the database (lowest children array
         * index being the "leftmost"). Subheaders are determined by header siblings, so when we
-        * start, we'll get the root at SQL ID = 1 and then query for its children, store the
+        * start, we'll get the relative root ID and then query for its children, store the
         * leftmost as a header and the rest as associated subheaders. Repeat process with each new
         * header's children. The relativeRootPos is the point from where new scenes will be loaded
-        * from the DB -it will be set to null if we're loading from the actual root.
+        * from the DB. ChildPos is the index of the subHeader which will act as the relative root.
          */
 
         Scene relativeRoot;
@@ -87,7 +87,7 @@ public class SceneTreeBuilder {
         }
 
         Cursor cursor;
-        //this array will change size as we decend the "tree" -------------------------Consider converting to stack if time allows
+        //this array will change size as we decend the "tree"
         List<Integer> childrenToCheck = new ArrayList<>(relativeRoot.getChildren());
         System.out.println("%%%%%%%%Children IDs to Check from Root: " + childrenToCheck.toString());
 
@@ -268,9 +268,9 @@ public class SceneTreeBuilder {
 
         //if we have more subheaders than just the create new scene entry
         if(subHeaders.size() > 1){
-            //add the scene at index 1 and set newSubHeader
-            subHeaders.add(1, scene);
-            newSubHeader = subHeaders.get(1);
+            //add the scene and set newSubHeader
+            subHeaders.add(scene);
+            newSubHeader = subHeaders.get(subHeaders.size() - 1);
         }
         else{//add the new scene to the end of the subHeaders list and set newSubHeader
             subHeaders.add(scene);
@@ -349,15 +349,71 @@ public class SceneTreeBuilder {
         }
     }
 
-    public void delete(Scene scene){
-
-    }
-
     public void editScene(Scene toEdit, String content){
         //reference scene and set trimmed text (remove leading and trailing whitespace)
         toEdit.setContent(content.trim());
         //store in database (only store change to content)
         this.dbHelper.updateById(this.db, toEdit.getId(), toEdit.getContent(), null, null);
+    }
+
+    public void deleteHeader(ExpandListAdapter eLAdapter, int headPos){
+        Scene target = eLAdapter.getGroup(headPos);
+        Scene parent = null;
+        Scene child = null;
+
+        //delete row from table
+        this.dbHelper.delete(this.db, target.getId());
+
+        //set parent if parent exists
+        if(headPos > 0){
+            parent = eLAdapter.getGroup(headPos - 1);
+        }
+        else{//otherwise set parent to root
+            parent = this.root;
+        }
+
+        //remove child reference from parent;
+        parent.removeChild(target);
+
+        //if child exists (if next index is equal or lower in value than last index)
+        if(headPos + 1 <= eLAdapter.getGroupCount() - 1){
+            child = eLAdapter.getGroup(headPos + 1);
+
+            //swap parent reference for child and store
+            child.removeParent(target);
+            child.addParent(parent);
+            parent.addChild(child);
+            this.dbHelper.updateById(this.db, child.getId(), null, child.parentsToString(), null);
+            //if child has siblings
+            List<Scene> siblings = eLAdapter.getChildren(headPos + 1);
+            if(siblings.size() > 1){//there will always be an associated sibling list, so don't need to check for null, 1st index is always a dummy
+                //swap parents for all of child's siblings and store
+                for (Scene sibling: siblings) {
+                    sibling.removeParent(target);
+                    sibling.addParent(parent);
+                    parent.addChild(sibling);
+                    this.dbHelper.updateById(this.db, sibling.getId(), null, child.parentsToString(), null);
+                }
+            }
+
+            //get target's associated sublist (siblings) and remove options scene at index 1 (we don't want to display two of them
+            List<Scene> subList = eLAdapter.getChildren(headPos);
+            subList.remove(0);
+
+            //concatenate target's siblings with with child's
+            siblings.addAll(subList);
+
+            //remove head and list hash
+            eLAdapter.removeGroup(headPos);
+        }//because there are no children load a sibling story
+        else if(eLAdapter.getChildren(headPos).size() > 1){
+            load(eLAdapter, headPos, 1);
+            //remove target which is now in subList at 1
+            eLAdapter.removeChild(headPos, 1);
+        }
+
+        //update changes to parent in DB
+        this.dbHelper.updateById(this.db, parent.getId(), null, null, parent.childrenToString());
     }
 
     private void log(String s){
