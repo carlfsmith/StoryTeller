@@ -132,6 +132,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
             case R.id.load_newstory_btn:
                 String tableName = this.editText.getText().toString().toLowerCase().trim();
                 tableName = tableName.replaceAll(" ", "_");
+                tableName = tableName.replaceAll("\'", ""); //done just in case the user backs out of the mainActivity and wants to reload
                 tableName = "\'"+tableName+"\'";
                 log("Create new story with name: " + tableName);
                 //check if user input text is valid
@@ -161,6 +162,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                 if(tableToLoad != null && tableToLoad.length() > 0){
                     log("Continue story " + tableToLoad);
                     tableToLoad = tableToLoad.replaceAll(" ", "_");
+                    tableToLoad = tableToLoad.replaceAll("\'", ""); //done just in case the user backs out of the mainActivity and wants to reload
                     tableToLoad = "\'"+tableToLoad+"\'";
                     SceneContact.TABLE = tableToLoad;
                     startActivity(new Intent(this, MainActivity.class));
