@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.scene.db.Scene;
@@ -28,17 +29,17 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener,
-        ExpandableListView.OnChildClickListener{
+        ExpandableListView.OnChildClickListener, View.OnClickListener{
 
     private ExpandableListView expandableListView;
-    private ExpandListAdapter expandListAdapter;
+    private static ExpandListAdapter expandListAdapter;
     private List<Scene> headerArr; //stores header text
     private List<List<Scene>> allSubHeaders;   //stores subHeader arrays    -----------------------------CONSIDER REMOVING
     private HashMap<Scene, List<Scene>> headToSub;    //relates header to subHeader
 
     private SceneDBHelper sceneDBHelper;
     private SQLiteDatabase sqlDB;
-    private SceneTreeBuilder treeBuilder;
+    private static SceneTreeBuilder treeBuilder;
 
     private AlertDialog dialog;
 
@@ -149,8 +150,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Log.d(TAG, s);
     }
 
-    //set from XML
-    public void onClicked(View v){
+    @Override
+    public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
+        //edit scene entry
+        final Scene s = (Scene)parent.getItemAtPosition(position);
+
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popup = inflater.inflate(R.layout.popup, null);
+        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+        eText.setText(s.getContent());
+        //change popup title from default
+        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        textView.setText("Edit Scene");
+        //create popup with unique positive button
+        createPopup(popup, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                System.out.println("HEAD POSITION: " + position);
+                //edit scene in array and database
+                treeBuilder.editScene(s, eText.getText().toString());
+                updateUI();
+            }
+        });
+
+        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
+        return true;
+    }
+
+    @Override
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        //get reference to subHeader and load new subList
+        treeBuilder.load(expandListAdapter, groupPosition, childPosition);
+        expandListAdapter.collapseLastGroup();
+        updateUI();
+        return false;
+    }
+
+    @Override
+    public void onClick(View v) {
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         View popup = inflater.inflate(R.layout.popup, null);
         //get the holder of the user entered text
@@ -226,46 +263,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
 
                 break;
-
-            case R.id.delete_btn:
-                treeBuilder.deleteHeader(expandListAdapter, ExpandListAdapter.lastClickedHeadPos);
-                updateUI();
         }
     }
 
-    @Override
-    public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
-        //edit scene entry
-        final Scene s = (Scene)parent.getItemAtPosition(position);
-
-        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popup = inflater.inflate(R.layout.popup, null);
-        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
-        eText.setText(s.getContent());
-        //change popup title from default
-        TextView textView = (TextView)popup.findViewById(R.id.textView);
-        textView.setText("Edit Scene");
-        //create popup with unique positive button
-        createPopup(popup, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                System.out.println("HEAD POSITION: " + position);
-                //edit scene in array and database
-                treeBuilder.editScene(s, eText.getText().toString());
-                updateUI();
-            }
-        });
-
-        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
-        return true;
+    public static SceneTreeBuilder getTreeBuilder(){
+        return treeBuilder;
     }
 
-    @Override
-    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-        //get reference to subHeader and load new subList
-        treeBuilder.load(expandListAdapter, groupPosition, childPosition);
-        expandListAdapter.collapseLastGroup();
-        updateUI();
-        return false;
+    public static ExpandListAdapter getExpandListAdapter(){
+        return expandListAdapter;
     }
 }

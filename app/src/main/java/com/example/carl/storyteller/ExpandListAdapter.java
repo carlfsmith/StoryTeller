@@ -1,15 +1,19 @@
 package com.example.carl.storyteller;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.scene.db.Scene;
+import com.example.scene.db.SceneTreeBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +40,12 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
     public static int NEW = 1;
 
     private final static String TAG = "EXPANDABLELIST_ADAPTER";
+
+    class ViewHolder {
+        TextView textView;
+        View divider;
+        ImageButton button;
+    }
 
     ExpandListAdapter(Context context, List<Scene> headers, HashMap<Scene, List<Scene>> assignSub, ExpandableListView eLView){
         this.context = context;
@@ -98,11 +108,6 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         return 2;
     }
 
-    class ViewHolder {
-        TextView textView;
-        View divider;
-    }
-
     @Override
     //parents size
     public int getGroupCount() {
@@ -158,7 +163,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+    public View getGroupView(final int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         Scene scene = getGroup(groupPosition);
         int toInflate;
         ViewHolder holder;
@@ -170,6 +175,17 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
             holder = new ViewHolder();
             holder.textView = (TextView)convertView.findViewById(R.id.header_entry);
             holder.divider = convertView.findViewById(R.id.header_divider);
+            holder.button = (ImageButton)convertView.findViewById(R.id.delete_btn);
+            //it's ugly putting this here instead of in MainActivity's onClick, but I need the row number for the button in each list item
+            holder.button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SceneTreeBuilder treeBuilder = MainActivity.getTreeBuilder();
+                    ExpandListAdapter expandListAdapter = MainActivity.getExpandListAdapter();
+                    treeBuilder.deleteHeader(expandListAdapter, groupPosition);
+                    notifyDataSetChanged();
+                }
+            });
             convertView.setTag(holder);
         }
         else{ //get the textView we stored in tag for faster access to textView
@@ -178,14 +194,17 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
 
         //bind data
         holder.textView.setText(scene.getContent());
+
         //adjust divider sizes
         if(this.headers.get(groupPosition) != null){
             //show small header divider when there are no subHeaders (1st doesn't count)
             if(this.getChildren(groupPosition).size() <= 1){
                 holder.divider.getLayoutParams().height = getDp(context.getResources().getDimension(R.dimen.divider_empty_height));
+                holder.divider.setBackgroundColor(context.getResources().getColor(R.color.headerEmpty));
             }
             else{//show large header divider when there are subHeaders
                 holder.divider.getLayoutParams().height = getDp(context.getResources().getDimension(R.dimen.divider_filled_height));
+                holder.divider.setBackgroundColor(context.getResources().getColor(R.color.headerFull));
             }
         }
 
@@ -265,10 +284,6 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         this.headers.add(groupPosition, subScene);
         //hash
         assignSub.put(subScene, subScenes);
-
-//        Scene temp = new Scene(subScene);
-//        subScene.set(header);
-//        header.set(temp);
     }
 
     public void trimSubList(int startPos){

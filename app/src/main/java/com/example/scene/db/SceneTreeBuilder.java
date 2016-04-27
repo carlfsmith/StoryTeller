@@ -58,7 +58,7 @@ public class SceneTreeBuilder {
         }
         cursor.close();
 
-        this.dBTEST();
+//        this.dBTEST();
     }
 
     public void load(ExpandListAdapter eLAdapter, int groupPos, int childPos){
@@ -150,15 +150,15 @@ public class SceneTreeBuilder {
             }
         }
 
-
-
-        for(int i = 0; i < eLAdapter.getGroupCount(); i++){
-            System.out.println(">>>>>>>>>>>>>>>>>>elem:"+(i+1)+
-                    "  id:"+eLAdapter.getGroup(i).getId()+
-                    "  content:"+eLAdapter.getGroup(i).getContent()+
-                    "  parents:"+eLAdapter.getGroup(i).parentsToString()+
-                    "  children:"+eLAdapter.getGroup(i).childrenToString());
-        }
+        //--------------FOR TESTING-----------------------------
+//        for(int i = 0; i < eLAdapter.getGroupCount(); i++){
+//            System.out.println(">>>>>>>>>>>>>>>>>>elem:"+(i+1)+
+//                    "  id:"+eLAdapter.getGroup(i).getId()+
+//                    "  content:"+eLAdapter.getGroup(i).getContent()+
+//                    "  parents:"+eLAdapter.getGroup(i).parentsToString()+
+//                    "  children:"+eLAdapter.getGroup(i).childrenToString());
+//        }
+        //---------------FOR TESTING---------------------------------
 
     }
 
@@ -250,7 +250,7 @@ public class SceneTreeBuilder {
             );
         }
 
-        dBTEST();
+//        dBTEST();
     }
 
     public void insertSubHeader(ExpandListAdapter eLAdapter, int headPos, Scene scene){
@@ -358,8 +358,8 @@ public class SceneTreeBuilder {
 
     public void deleteHeader(ExpandListAdapter eLAdapter, int headPos){
         Scene target = eLAdapter.getGroup(headPos);
-        Scene parent = null;
-        Scene child = null;
+        Scene parent;
+        Scene child;
 
         //delete row from table
         this.dbHelper.delete(this.db, target.getId());
@@ -410,6 +410,9 @@ public class SceneTreeBuilder {
             load(eLAdapter, headPos, 1);
             //remove target which is now in subList at 1
             eLAdapter.removeChild(headPos, 1);
+        }
+        else{//we're deleting the last entry so just remove from array
+            eLAdapter.removeGroup(headPos);
         }
 
         //update changes to parent in DB

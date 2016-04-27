@@ -14,9 +14,6 @@
         android:scrollbars="none"
         android:divider="#00000000"
         android:background="@color/background"
-        android:focusableInTouchMode="false"
-        android:focusable="false"
-        android:touchscreenBlocksFocus="false"
         android:clickable="false" />
 
 </LinearLayout>
