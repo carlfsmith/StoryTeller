@@ -36,10 +36,10 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
     private EditText editText;
     private Spinner spinner;
 
-    private SceneDBHelper sceneDBHelper;
-    private SQLiteDatabase sqlDB;
+    private SceneDBHelper sceneDBHelper = null;
+    private SQLiteDatabase sqlDB = null;
 
-    private ArrayList<String> tables;
+    private ArrayList<String> tables = null;
 
     private String tableToLoad;
 
@@ -56,19 +56,8 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
 
         //get table names
         tables = new ArrayList<>();
-        loadTables();
-        //close database
-        sqlDB.close();
 
-        //set edittext and spinner
-        editText = (EditText)findViewById(R.id.load_entertext);
-        editText.requestFocus();
-        editText.setOnClickListener(this);
-        spinner = (Spinner)findViewById(R.id.load_spinner);
-        spinner.setOnItemSelectedListener(this);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tables);
-        spinner.setAdapter(adapter);
+        //see onResume
     }
 
     public void loadTables(){
@@ -101,6 +90,25 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
     @Override
     protected void onResume() {
         super.onResume();
+
+        if(!sqlDB.isOpen()){
+            sqlDB = sceneDBHelper.getWritableDatabase();
+        }
+
+        tables.clear();
+        loadTables();
+        //close database
+        sqlDB.close();
+
+        //set edittext and spinner
+        editText = (EditText)findViewById(R.id.load_entertext);
+        editText.requestFocus();
+        editText.setOnClickListener(this);
+        spinner = (Spinner)findViewById(R.id.load_spinner);
+        spinner.setOnItemSelectedListener(this);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, tables);
+        spinner.setAdapter(adapter);
     }
 
     @Override
@@ -132,7 +140,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
             case R.id.load_newstory_btn:
                 String tableName = this.editText.getText().toString().toLowerCase().trim();
                 tableName = tableName.replaceAll(" ", "_");
-                tableName = tableName.replaceAll("\'", ""); //done just in case the user backs out of the mainActivity and wants to reload
+                tableName = tableName.replaceAll("\'", "");
                 tableName = "\'"+tableName+"\'";
                 log("Create new story with name: " + tableName);
                 //check if user input text is valid
@@ -141,8 +149,6 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                     if(!tables.contains(tableName)){
                         //set tableName
                         SceneContact.TABLE = tableName;
-                        //add tablename to list
-                        tables.add(tableName);
                         //the new activity will generate the new table
                         startActivity(new Intent(this, MainActivity.class));
                     }
@@ -162,7 +168,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                 if(tableToLoad != null && tableToLoad.length() > 0){
                     log("Continue story " + tableToLoad);
                     tableToLoad = tableToLoad.replaceAll(" ", "_");
-                    tableToLoad = tableToLoad.replaceAll("\'", ""); //done just in case the user backs out of the mainActivity and wants to reload
+                    tableToLoad = tableToLoad.replaceAll("\'", "");
                     tableToLoad = "\'"+tableToLoad+"\'";
                     SceneContact.TABLE = tableToLoad;
                     startActivity(new Intent(this, MainActivity.class));

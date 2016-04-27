@@ -20,6 +20,7 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.example.scene.db.Scene;
+import com.example.scene.db.SceneContact;
 import com.example.scene.db.SceneDBHelper;
 import com.example.scene.db.SceneTreeBuilder;
 
@@ -261,6 +262,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
 
                 break;
+
+            case R.id.deleteStoryBtn:
+                sceneDBHelper.deleteTable(sqlDB, SceneContact.TABLE);
+                finish();
         }
     }
 

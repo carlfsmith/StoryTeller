@@ -115,7 +115,7 @@
                 android:background="#ffffff"
                 android:spinnerMode="dialog"
                 android:layout_marginBottom="5dp"
-                android:prompt="@string/story_prompt"/>
+                android:prompt="@string/story_prompt" />
 
             <ImageButton
                 android:layout_width="35dp"
