@@ -28,14 +28,18 @@ public class SceneDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db){
     }
 
-    public void init(SQLiteDatabase db){
+    public void createTableIfNotExists(SQLiteDatabase db){
         Log.d(TAG, SceneContact.Columns.CREATE_TABLE);
         db.execSQL(SceneContact.Columns.CREATE_TABLE);
         Log.d(TAG, "database created.");
     }
 
-    public void clearTable(SQLiteDatabase db){
-        db.execSQL("DROP TABLE IF EXISTS " + SceneContact.TABLE);
+    public void deleteTable(SQLiteDatabase db, String tableName){
+        db.execSQL("DROP TABLE IF EXISTS " + tableName);
+    }
+
+    public Cursor getTables(SQLiteDatabase db){
+        return db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", null);
     }
 
     @Override

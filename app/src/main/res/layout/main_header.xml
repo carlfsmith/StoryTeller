@@ -17,6 +17,7 @@
         android:paddingTop="120dp"
         android:paddingLeft="35dp"
         android:textSize="38dp"
-        android:onClick="onClick" />
+        android:onClick="onClick"
+        android:typeface="serif" />
 
 </LinearLayout>

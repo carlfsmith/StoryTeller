@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e2d5af">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/paper_background"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/app_name"
+        android:layout_gravity="center_horizontal|top"
+        android:backgroundTint="#bda265"
+        android:backgroundTintMode="src_over"
+        android:background="#bda265"
+        android:textColor="#FFFFFF"
+        android:paddingTop="100dp"
+        android:paddingLeft="25dp"
+        android:textSize="45dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp"
+        android:typeface="serif"
+        android:id="@+id/textView3" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
+
+        <FrameLayout
+            android:layout_width="250dp"
+            android:layout_height="125dp"
+            android:background="@drawable/load_layout"
+            android:padding="10dp"
+            android:id="@+id/frameLayout"
+            android:layout_above="@+id/frameLayout2"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginBottom="70dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Story"
+                android:id="@+id/textView2"
+                android:layout_gravity="center_horizontal|top"
+                android:textSize="20dp"
+                android:textColor="#ffffff" />
+
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="33dp"
+                android:id="@+id/load_entertext"
+                android:layout_gravity="center"
+                android:layout_marginTop="0dp"
+                android:background="#ffffff"
+                android:hint="enter title"
+                android:paddingLeft="5dp"
+                android:singleLine="true"
+                android:layout_marginBottom="5dp"
+                android:maxLines="1"
+                android:imeOptions="actionDone"/>
+
+            <ImageButton
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:id="@+id/load_newstory_btn"
+                android:layout_gravity="right|bottom"
+                android:background="@drawable/load_btn"
+                android:src="@drawable/ic_action_done"
+                android:onClick="onClick" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="250dp"
+            android:layout_height="125dp"
+            android:background="@drawable/load_layout"
+            android:padding="10dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/frameLayout"
+            android:id="@+id/frameLayout2"
+            android:backgroundTint="#bc641c"
+            android:backgroundTintMode="src_over"
+            android:layout_gravity="center"
+            android:layout_marginTop="70dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Continue Story"
+                android:id="@+id/textView5"
+                android:layout_gravity="center_horizontal|top"
+                android:textSize="20dp"
+                android:textColor="#ffffff" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:id="@+id/load_spinner"
+                android:layout_gravity="center_vertical"
+                android:background="#ffffff"
+                android:spinnerMode="dialog"
+                android:layout_marginBottom="5dp"
+                android:prompt="@string/story_prompt"/>
+
+            <ImageButton
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:id="@+id/load_continuestory_btn"
+                android:layout_gravity="bottom|right"
+                android:background="@drawable/load_btn"
+                android:src="@drawable/ic_action_done_orange"
+                android:onClick="onClick" />
+
+        </FrameLayout>
+    </FrameLayout>
+
+</RelativeLayout>

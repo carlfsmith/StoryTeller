@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.scene.db.Scene;
@@ -34,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ExpandableListView expandableListView;
     private static ExpandListAdapter expandListAdapter;
     private List<Scene> headerArr; //stores header text
-    private List<List<Scene>> allSubHeaders;   //stores subHeader arrays    -----------------------------CONSIDER REMOVING
     private HashMap<Scene, List<Scene>> headToSub;    //relates header to subHeader
 
     private SceneDBHelper sceneDBHelper;
@@ -53,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //initialize database
         sceneDBHelper = new SceneDBHelper(MainActivity.this);
         sqlDB = sceneDBHelper.getWritableDatabase();
-        sceneDBHelper.init(sqlDB);
+        sceneDBHelper.createTableIfNotExists(sqlDB);
 
         //FOR TESTING------------------------------
 //        sceneDBHelper.clear(sqlDB);
@@ -61,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         //initialize lists
         headerArr = new ArrayList<>();
-        allSubHeaders = new ArrayList<>();
         headToSub = new HashMap<>();
 
         //initialize exp list view and related objects
@@ -88,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onStop() {
         super.onStop();
         this.sqlDB.close();
+        log("stopping MainActivity...");
     }
 
     @Override
