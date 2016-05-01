@@ -146,17 +146,6 @@ public class SceneTreeBuilder {
                 eLAdapter.setHeadToChildren(eLAdapter.getGroupCount() - 1, targetSubHeader);
             }
         }
-
-        //--------------FOR TESTING-----------------------------
-//        for(int i = 0; i < eLAdapter.getGroupCount(); i++){
-//            System.out.println(">>>>>>>>>>>>>>>>>>elem:"+(i+1)+
-//                    "  id:"+eLAdapter.getGroup(i).getId()+
-//                    "  content:"+eLAdapter.getGroup(i).getContent()+
-//                    "  parents:"+eLAdapter.getGroup(i).parentsToString()+
-//                    "  children:"+eLAdapter.getGroup(i).childrenToString());
-//        }
-        //---------------FOR TESTING---------------------------------
-
     }
 
     public void insertHeader(ExpandListAdapter eLAdapter, int position, Scene scene){
@@ -311,7 +300,6 @@ public class SceneTreeBuilder {
     //USED FOR TESTING-----------------------------
     public void dBTEST(){
         //this method queries database for all rows, then displays information
-        //FOR TESTING---------------------------------------------------
         Cursor cursor = dbHelper.search(db, -1, null, null, null);
         List<Scene> blah = new ArrayList<>();
         //move cursor items to array
@@ -342,7 +330,6 @@ public class SceneTreeBuilder {
             for(int i = 0; i < blah.size(); i++){
                 System.out.println("------------elem:"+(i+1)+"  id:"+blah.get(i).getId()+"  content:"+blah.get(i).getContent()+"  parents:"+blah.get(i).parentsToString()+"  children:"+blah.get(i).childrenToString());
             }
-            //FOR TESTING---------------------------------------------------
         }
     }
 
@@ -419,12 +406,12 @@ public class SceneTreeBuilder {
     public void moveUp(ExpandListAdapter eLAdapter, int headPos){
         //move the group at headPos to headPos-1 then update
 
-        Scene grandparent = null;
-        Scene parent = null;
-        Scene current = null;
+        Scene grandparent;
+        Scene parent;
+        Scene current;
         Scene child = null;
-        List<Integer> currentsChildren = null;
-        List<Integer> parentsChildren = null;
+        List<Integer> currentsChildren;
+        List<Integer> parentsChildren;
 
         //if the header indexes are within the list bounds
         if(headPos-1 > -1 && headPos < eLAdapter.getGroupCount()){

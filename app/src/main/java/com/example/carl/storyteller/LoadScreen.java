@@ -26,6 +26,8 @@ import com.example.scene.db.SceneDBHelper;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 /**
  * Provides the load screen view and connects the user to the MainActivity (where their story is
  * displayed).
@@ -33,15 +35,16 @@ import java.util.ArrayList;
 public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
         View.OnClickListener{
 
-    private EditText editText;
-    private Spinner spinner;
+    private EditText editText = null;
+    private Spinner spinner = null;
 
     private SceneDBHelper sceneDBHelper = null;
     private SQLiteDatabase sqlDB = null;
 
     private ArrayList<String> tables = null;
 
-    private String tableToLoad;
+    private int selection = 0;
+    private String tableToLoad = null;
 
     private static final String TAG = "LoadScreen";
 
@@ -64,6 +67,11 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
         spinner = (Spinner)findViewById(R.id.load_spinner);
         spinner.setOnItemSelectedListener(this);
 
+        //set bundle items
+        if(savedInstanceState != null){
+            this.selection = savedInstanceState.getInt("selection");
+        }
+
         //see onResume
     }
 
@@ -78,6 +86,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                 //get substring without quotes
                 tName = tName.replaceAll("\'", "");
                 tName = tName.replaceAll("_", " ");
+                tName = WordUtils.capitalize(tName);
                 log("got table name: " + tName);
                 tables.add(tName);
                 cursor.moveToNext();
@@ -90,8 +99,9 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putInt("selection", this.selection);
     }
 
     @Override
@@ -109,6 +119,10 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, tables);
         spinner.setAdapter(adapter);
+
+        //select the last table that was used.
+        if(this.selection > 0 && this.selection < this.tables.size())
+            spinner.setSelection(this.selection);
     }
 
     @Override
@@ -127,6 +141,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         //get user selection from spinner
         this.tableToLoad = (String)parent.getItemAtPosition(position);
+        this.selection = position;
     }
 
     @Override
@@ -142,7 +157,7 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                 tableName = tableName.replaceAll("\'", "");
                 log("Create new story with name: " + tableName);
                 //check if user input text is valid
-                if(tableName.length() > 2){
+                if(tableName.length() > 0){
                     //check if tableName is not in our list of tablenames
                     if(!tables.contains(tableName)){
                         tableName = tableName.replaceAll(" ", "_");
@@ -167,11 +182,14 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
             case R.id.load_continuestory_btn:
                 if(tableToLoad != null && tableToLoad.length() > 0){
                     log("Continue story " + tableToLoad);
+                    String title = tableToLoad;
                     tableToLoad = tableToLoad.replaceAll(" ", "_");
                     tableToLoad = tableToLoad.replaceAll("\'", "");
                     tableToLoad = "\'"+tableToLoad+"\'";
                     SceneContact.TABLE = tableToLoad;
-                    startActivity(new Intent(this, MainActivity.class));
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.putExtra("storyName", title);
+                    startActivity(intent);
                 }//there's nothing to select
                 else{
                     Toast.makeText(this, "There is no story to load",

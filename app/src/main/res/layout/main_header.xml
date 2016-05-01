@@ -14,15 +14,17 @@
         android:backgroundTintMode="src_over"
         android:background="#bda265"
         android:textColor="@color/abc_primary_text_material_dark"
-        android:paddingTop="120dp"
-        android:paddingLeft="35dp"
+        android:paddingLeft="25dp"
         android:textSize="38dp"
         android:onClick="onClick"
         android:typeface="serif"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="0dp"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="0dp" />
+        android:layout_marginTop="0dp"
+        android:gravity="left|bottom"
+        android:paddingBottom="25dp"
+        android:textStyle="italic" />
 
     <ImageButton
         android:layout_width="60dp"

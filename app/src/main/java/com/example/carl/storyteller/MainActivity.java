@@ -2,6 +2,7 @@ package com.example.carl.storyteller;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -21,18 +22,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.scene.db.Scene;
 import com.example.scene.db.SceneContact;
 import com.example.scene.db.SceneDBHelper;
 import com.example.scene.db.SceneTreeBuilder;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener,
-        ExpandableListView.OnChildClickListener, View.OnClickListener{
+        ExpandableListView.OnChildClickListener, View.OnClickListener, TextView.OnLongClickListener{
 
     private ExpandableListView expandableListView;
     private static ExpandListAdapter expandListAdapter;
@@ -44,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static SceneTreeBuilder treeBuilder;
 
     private AlertDialog dialog;
+
+    TextView headerText = null;
+    String title = null;
 
     private final static String TAG = "MAIN_ACTIVITY";
 
@@ -57,9 +64,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sqlDB = sceneDBHelper.getWritableDatabase();
         sceneDBHelper.createTableIfNotExists(sqlDB);
         log("im in!: " + SceneContact.TABLE);
-        //FOR TESTING------------------------------
-//        sceneDBHelper.clear(sqlDB);
-        //FOR TESTING------------------------------
 
         //initialize lists
         headerArr = new ArrayList<>();
@@ -72,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         LayoutInflater inflater = getLayoutInflater();
         ViewGroup header = (ViewGroup) inflater.inflate(R.layout.main_header, expandableListView, false);
         expandableListView.addHeaderView(header, null, false);
+        headerText = (TextView) findViewById(R.id.appHeader);
+        headerText.setOnLongClickListener(this);
         ////initLists();
         expandListAdapter = new ExpandListAdapter(this, headerArr, headToSub, expandableListView);
         //set expandable list adapter
@@ -85,9 +91,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         updateUI();
 
         //set bundle contents
-        if(savedInstanceState != null) {
-            int lastGroup = savedInstanceState.getInt("lastGroupToExpand");
-            expandListAdapter.setLastGroupToExpand(lastGroup);
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) {
+            this.title = extras.getString("storyName");
+            headerText.setText(this.title);
         }
     }
 
@@ -100,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putSerializable("lastGroupToExpand", expandListAdapter.getLastGroupToExpand());
+        log("SAVING STATE...");
     }
 
 
@@ -136,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         expandListAdapter.notifyDataSetChanged();
     }
 
-    private void createPopup(View popup, DialogInterface.OnClickListener listener){
+    private void createPopup(View popup, DialogInterface.OnClickListener listener, final Boolean condition){
         ContextThemeWrapper ctw = new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle);
         AlertDialog.Builder aDBuilder = new AlertDialog.Builder(ctw);
         aDBuilder.setView(popup);
@@ -146,14 +154,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 //collapse eListView
-                expandListAdapter.collapseLastGroup();
+                if(!condition)
+                    expandListAdapter.collapseLastGroup();
             }
         });
         aDBuilder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 //collapse eListView
-                expandListAdapter.collapseLastGroup();
+                if(!condition)
+                    expandListAdapter.collapseLastGroup();
             }
         });
         dialog = aDBuilder.create();
@@ -169,33 +179,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void log(String s){
         Log.d(TAG, s);
-    }
-
-    @Override
-    public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
-        //edit scene entry
-        final Scene s = (Scene)parent.getItemAtPosition(position);
-
-        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popup = inflater.inflate(R.layout.popup, null);
-        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
-        eText.setText(s.getContent());
-        //change popup title from default
-        TextView textView = (TextView)popup.findViewById(R.id.textView);
-        textView.setText("Edit Scene");
-        //create popup with unique positive button
-        createPopup(popup, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                System.out.println("HEAD POSITION: " + position);
-                //edit scene in array and database
-                treeBuilder.editScene(s, eText.getText().toString());
-                updateUI();
-            }
-        });
-
-        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
-        return true;
     }
 
     @Override
@@ -225,14 +208,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         int headPos = expandListAdapter.getLastGroupToExpand() + 1;
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
-                        System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertHeader(expandListAdapter, headPos, scene);
                         //collapse eListView
                         expandListAdapter.collapseLastGroup();
                         updateUI();
                     }
-                });
+                }, false);
 
                 break;
             case R.id.new_subhead_btn:
@@ -248,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         int headPos = expandListAdapter.getLastGroupToExpand();
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
-                        System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertSubHeader(expandListAdapter, headPos, scene);
                         //load subHeader scene
@@ -258,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         expandListAdapter.collapseLastGroup();
                         updateUI();
                     }
-                });
+                }, false);
 
                 //switch over to new subHead scene branch or no?----------------------------------------------------------<<<<<
 
@@ -276,18 +257,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         int headPos = expandListAdapter.getLastGroupToExpand() + 1;
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
-                        System.out.println("HEAD POSITION: " + headPos);
                         //insert new scene into array and database
                         treeBuilder.insertHeader(expandListAdapter, headPos, scene);
                         updateUI();
                     }
-                });
+                }, false);
 
                 break;
 
             case R.id.deleteStoryBtn:
                 sceneDBHelper.deleteTable(sqlDB, SceneContact.TABLE);
-                log("deleting story...");
                 finish();
 
                 break;
@@ -319,7 +298,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 final int headPosn = expandListAdapter.getLastGroupToExpand() + 1;
                 treeBuilder.moveUp(expandListAdapter, headPosn);
                 //only collapse when headPos has an index smaller than the list size
-                log("position: " + headPosn);
                 if(headPosn < expandListAdapter.getGroupCount())
                     expandableListView.collapseGroup(headPosn - 1);
                 expandListAdapter.expandGroup(headPosn);
@@ -346,5 +324,114 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public static ExpandListAdapter getExpandListAdapter(){
         return expandListAdapter;
+    }
+
+    @Override
+    public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
+        //edit scene entry
+        final Scene s = (Scene)parent.getItemAtPosition(position);
+
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popup = inflater.inflate(R.layout.popup, null);
+        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+        eText.setText(s.getContent());
+        //change popup title from default
+        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        textView.setText("Edit Scene");
+        //create popup with unique positive button
+        createPopup(popup, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                //edit scene in array and database
+                treeBuilder.editScene(s, eText.getText().toString());
+                updateUI();
+            }
+        }, false);
+
+        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
+        return true;
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popup = inflater.inflate(R.layout.popup, null);
+        final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
+        eText.setText(this.title);
+        //change popup title from default
+        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        textView.setText("Change Story's Name");
+        //create popup with unique positive button
+        createPopup(popup, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogg, int id) {
+                //to be overridden
+            }
+        }, true);
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String tablename = scrub(eText.getText().toString());
+                String finalTableName = dBScrub(tablename);
+                //check if name is unique
+                if(isInTables(finalTableName)){
+                    //tell user that name selected is invalid
+                    Toast.makeText(MainActivity.this, "Story name is already being used",
+                            Toast.LENGTH_LONG).show();
+                }
+                else{
+                    title = tablename;
+                    sceneDBHelper.renameTable(sqlDB, finalTableName);
+                    SceneContact.TABLE = finalTableName;
+                    headerText.setText(tablename);
+                    updateUI();
+                    dialog.dismiss();
+                    log("GOOD TO GO WITH: " + title);
+                }
+            }
+        });
+
+        //do not consume the following onClick callback (prevent doing two types of clicks sequentially)
+        return true;
+    }
+
+    private String scrub(String dirty){
+        dirty = dirty.toLowerCase();
+        String clean = dirty.replaceAll("\'", "");
+        clean = clean.replaceAll("_", " ");
+        clean = WordUtils.capitalize(clean);
+        return clean;
+    }
+
+    private String dBScrub(String dirty){
+        dirty = dirty.toLowerCase();
+        String clean = dirty.replaceAll(" ", "_");
+        clean = "\'"+clean+"\'";
+        return clean;
+    }
+
+    public Boolean isInTables(String tableName){
+        Cursor cursor = sceneDBHelper.getTables(sqlDB);
+        //if there are tables in database
+        if(cursor != null){
+            cursor.moveToFirst();
+            //populate list with table names
+            while(!cursor.isAfterLast()){
+                String tName = "'"+cursor.getString(cursor.getColumnIndex("name"))+"'";
+                log("are they equal?: " + tName + "  " + tableName);
+                if(tName.equals(tableName)){
+                    log("they're equal");
+                    return true;
+                }
+                cursor.moveToNext();
+            }
+            cursor.close();
+        }
+        else{
+            log("no tables to load");
+        }
+
+        return false;
     }
 }

@@ -124,6 +124,11 @@ public class SceneDBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void renameTable(SQLiteDatabase db, String newTableName){
+        db.execSQL("ALTER TABLE " + SceneContact.TABLE + " RENAME TO " + newTableName +";");
+        SceneContact.TABLE = newTableName;
+    }
+
     private void log(String s){
         Log.d(TAG, s);
     }
