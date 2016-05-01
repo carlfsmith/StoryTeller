@@ -57,6 +57,13 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
         //get table names
         tables = new ArrayList<>();
 
+        //set edittext and spinner
+        editText = (EditText)findViewById(R.id.load_entertext);
+        editText.requestFocus();
+        editText.setOnClickListener(this);
+        spinner = (Spinner)findViewById(R.id.load_spinner);
+        spinner.setOnItemSelectedListener(this);
+
         //see onResume
     }
 
@@ -100,13 +107,6 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
         //close database
         sqlDB.close();
 
-        //set edittext and spinner
-        editText = (EditText)findViewById(R.id.load_entertext);
-        editText.requestFocus();
-        editText.setOnClickListener(this);
-        spinner = (Spinner)findViewById(R.id.load_spinner);
-        spinner.setOnItemSelectedListener(this);
-
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, tables);
         spinner.setAdapter(adapter);
     }
@@ -139,14 +139,14 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
         switch (v.getId()){
             case R.id.load_newstory_btn:
                 String tableName = this.editText.getText().toString().toLowerCase().trim();
-                tableName = tableName.replaceAll(" ", "_");
                 tableName = tableName.replaceAll("\'", "");
-                tableName = "\'"+tableName+"\'";
                 log("Create new story with name: " + tableName);
                 //check if user input text is valid
-                if(tableName.length() > 0){
+                if(tableName.length() > 2){
                     //check if tableName is not in our list of tablenames
                     if(!tables.contains(tableName)){
+                        tableName = tableName.replaceAll(" ", "_");
+                        tableName = "\'"+tableName+"\'";
                         //set tableName
                         SceneContact.TABLE = tableName;
                         //the new activity will generate the new table

@@ -45,7 +45,34 @@
             android:layout_weight="1"
             android:id="@+id/new_subhead_btn"
             android:onClick="onClick"
-            android:layout_marginLeft="3dp" />
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/move_down_btn"
+            android:layout_marginLeft="3dp"
+            android:background="@drawable/delete_btn_shape"
+            android:layout_marginRight="3dp"
+            android:src="@drawable/ic_action_navigation_arrow_drop_down"
+            android:backgroundTint="#2f86ee"
+            android:backgroundTintMode="multiply"
+            android:focusable="false"
+            android:onClick="onClick" />
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/move_up_btn"
+            android:background="@drawable/delete_btn_shape"
+            android:layout_marginLeft="3dp"
+            android:src="@drawable/ic_action_navigation_arrow_drop_up"
+            android:backgroundTintMode="multiply"
+            android:backgroundTint="#2f86ee"
+            android:focusable="false"
+            android:onClick="onClick" />
+
     </LinearLayout>
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.example.carl.storyteller;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -8,11 +9,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         sceneDBHelper = new SceneDBHelper(MainActivity.this);
         sqlDB = sceneDBHelper.getWritableDatabase();
         sceneDBHelper.createTableIfNotExists(sqlDB);
-
+        log("im in!: " + SceneContact.TABLE);
         //FOR TESTING------------------------------
 //        sceneDBHelper.clear(sqlDB);
         //FOR TESTING------------------------------
@@ -80,12 +83,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         treeBuilder.load(expandListAdapter, -1, -1);
 
         updateUI();
+
+        //set bundle contents
+        if(savedInstanceState != null) {
+            int lastGroup = savedInstanceState.getInt("lastGroupToExpand");
+            expandListAdapter.setLastGroupToExpand(lastGroup);
+        }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putSerializable("lastGroupToExpand", expandListAdapter.getLastGroupToExpand());
+    }
+
 
     @Override
     protected void onStop() {
         super.onStop();
         this.sqlDB.close();
+        this.sceneDBHelper.close();
         log("stopping MainActivity...");
     }
 
@@ -200,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         //we're inserting into the header AFTER the one our options are under
-                        int headPos = ExpandListAdapter.lastClickedHeadPos + 1;
+                        int headPos = expandListAdapter.getLastGroupToExpand() + 1;
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
                         System.out.println("HEAD POSITION: " + headPos);
@@ -223,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         //we're inserting into index 1 under headPos
-                        int headPos = ExpandListAdapter.lastClickedHeadPos;
+                        int headPos = expandListAdapter.getLastGroupToExpand();
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
                         System.out.println("HEAD POSITION: " + headPos);
@@ -245,13 +267,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case R.id.appHeader:
                 //Add new header underneath appHeader
                 //because appHead is not part of the header array, set below to -1
-                ExpandListAdapter.lastClickedHeadPos = -1;
+                expandListAdapter.setLastGroupToExpand(-1);
                 //create popup with same button as first case
                 createPopup(popup, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         //we're inserting into the header AFTER the one our options are under
-                        int headPos = ExpandListAdapter.lastClickedHeadPos + 1;
+                        int headPos = expandListAdapter.getLastGroupToExpand() + 1;
                         //create new scene with trimmed user input
                         Scene scene = new Scene(eText.getText().toString().trim());
                         System.out.println("HEAD POSITION: " + headPos);
@@ -265,7 +287,56 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             case R.id.deleteStoryBtn:
                 sceneDBHelper.deleteTable(sqlDB, SceneContact.TABLE);
+                log("deleting story...");
                 finish();
+
+                break;
+
+            case R.id.move_up_btn:
+                //move the current header and subheaders above the header above it (index-1)
+                final int headPos = expandListAdapter.getLastGroupToExpand();
+                treeBuilder.moveUp(expandListAdapter, headPos);
+                //when headPos is greater than 0, collapse
+                if(headPos > 0)
+                    expandListAdapter.collapseLastGroup();
+                expandListAdapter.expandGroup(headPos - 1);
+                updateUI();
+
+                //scroll to new position
+                expandableListView.clearFocus();
+                final int height = expandableListView.getHeight() / 2;
+                expandableListView.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        expandableListView.smoothScrollToPositionFromTop(headPos+1, height);
+                    }
+                });
+                break;
+
+            case R.id.move_down_btn:
+                //move the current header and subheaders below the header below it.
+                //..which is the same as moving the header below up
+                final int headPosn = expandListAdapter.getLastGroupToExpand() + 1;
+                treeBuilder.moveUp(expandListAdapter, headPosn);
+                //only collapse when headPos has an index smaller than the list size
+                log("position: " + headPosn);
+                if(headPosn < expandListAdapter.getGroupCount())
+                    expandableListView.collapseGroup(headPosn - 1);
+                expandListAdapter.expandGroup(headPosn);
+                updateUI();
+
+                //scroll to new position
+                expandableListView.clearFocus();
+                final int heightt = expandableListView.getHeight() / 2;
+
+                expandableListView.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        //expandableListView.smoothScrollToPosition(headPosn);
+                        expandableListView.smoothScrollToPositionFromTop(headPosn + 2, heightt);
+                    }
+                });
+                break;
         }
     }
 

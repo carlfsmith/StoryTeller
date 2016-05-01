@@ -29,8 +29,14 @@ public class SceneDBHelper extends SQLiteOpenHelper {
     }
 
     public void createTableIfNotExists(SQLiteDatabase db){
-        Log.d(TAG, SceneContact.Columns.CREATE_TABLE);
-        db.execSQL(SceneContact.Columns.CREATE_TABLE);
+        log("Table name in create: " + SceneContact.TABLE);
+        String s = "CREATE TABLE IF NOT EXISTS " + SceneContact.TABLE + " (" +
+                SceneContact.Columns._ID + " INTEGER PRIMARY KEY, " +
+                SceneContact.Columns.SCENE + " TEXT, " +
+                SceneContact.Columns.PARENTS + " TEXT, " +
+                SceneContact.Columns.CHILDREN + " TEXT" + ")";
+        Log.d(TAG, s);
+        db.execSQL(s);
         Log.d(TAG, "database created.");
     }
 

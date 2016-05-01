@@ -40,6 +40,8 @@
         android:background="@drawable/delete_btn_shape"
         android:src="@drawable/ic_action_action_delete"
         android:layout_below="@+id/header_divider"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:backgroundTintMode="multiply"
+        android:backgroundTint="#d26363" />
 
 </RelativeLayout>

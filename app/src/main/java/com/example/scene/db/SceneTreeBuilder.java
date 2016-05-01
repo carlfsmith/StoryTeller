@@ -3,13 +3,10 @@ package com.example.scene.db;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-import android.widget.Adapter;
-import android.widget.AdapterView;
 
 import com.example.carl.storyteller.ExpandListAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static android.provider.BaseColumns._ID;
@@ -78,7 +75,7 @@ public class SceneTreeBuilder {
         }
         else{
             //swap header and subHeader
-            eLAdapter.swapHeaderWithSubHeader(groupPos, childPos);
+            eLAdapter.swapGroupWithChild(groupPos, childPos);
             //remove all hashes for elements in list after groupPos then remove subArray at groupPos + 1
             eLAdapter.trimSubList(groupPos + 1);
             //set relativeRoot to new header at groupPos
@@ -417,6 +414,77 @@ public class SceneTreeBuilder {
 
         //update changes to parent in DB
         this.dbHelper.updateById(this.db, parent.getId(), null, null, parent.childrenToString());
+    }
+
+    public void moveUp(ExpandListAdapter eLAdapter, int headPos){
+        //move the group at headPos to headPos-1 then update
+
+        Scene grandparent = null;
+        Scene parent = null;
+        Scene current = null;
+        Scene child = null;
+        List<Integer> currentsChildren = null;
+        List<Integer> parentsChildren = null;
+
+        //if the header indexes are within the list bounds
+        if(headPos-1 > -1 && headPos < eLAdapter.getGroupCount()){
+            //set scenes
+            parent = eLAdapter.getGroup(headPos-1);
+            current = eLAdapter.getGroup(headPos);
+            //set scenes if they exist
+            if(headPos-2 > -1)
+                grandparent = eLAdapter.getGroup(headPos-2);
+            else
+                grandparent = root;
+            if(headPos+1 < eLAdapter.getGroupCount())
+                child = eLAdapter.getGroup(headPos+1);
+
+            //grandparent's children become current's children
+            currentsChildren = current.getChildren();
+            current.setChildren(grandparent.getChildren());
+            //current's children become parent's children
+            parentsChildren = parent.getChildren();
+            parent.setChildren(currentsChildren);
+            //parent's children become grandparent's children
+            grandparent.setChildren(parentsChildren);
+
+            //parent and associated subheaders get current as a new parent
+            parent.removeParent(grandparent);
+            parent.addParent(current);
+            changeParent(eLAdapter, headPos-1, grandparent, current);
+
+            //current and associated subheaders get grandparent as new parent
+            current.removeParent(parent);
+            current.addParent(grandparent);
+            changeParent(eLAdapter, headPos, parent, grandparent);
+
+            //child and associated subheaders get parent as new parent
+            if(child != null){
+                child.removeParent(current);
+                child.addParent(parent);
+                changeParent(eLAdapter, headPos+1, current, parent);
+            }
+
+            //swap the current and parent header positions in list
+            eLAdapter.swapGroups(headPos, headPos-1);
+
+            //save changes to database
+            this.dbHelper.updateById(this.db, grandparent.getId(), null, null, grandparent.childrenToString());
+            this.dbHelper.updateById(this.db, parent.getId(), null, parent.parentsToString(), parent.childrenToString());
+            this.dbHelper.updateById(this.db, current.getId(), null, current.parentsToString(), current.childrenToString());
+            if(child != null){
+                this.dbHelper.updateById(this.db, child.getId(), null, child.parentsToString(), child.childrenToString());
+            }
+        }
+    }
+
+    private void changeParent(ExpandListAdapter eLAdapter, int headPos, Scene oldParent, Scene newParent){
+        Scene sibling = null;
+        for(int i = 0; i < eLAdapter.getChildren(headPos).size(); i++){
+            sibling = eLAdapter.getChild(headPos,i);
+            sibling.removeParent(oldParent);
+            sibling.addParent(newParent);
+        }
     }
 
     private void log(String s){

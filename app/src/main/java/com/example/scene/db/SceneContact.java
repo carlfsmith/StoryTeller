@@ -12,12 +12,5 @@ public class SceneContact {
         public static final String SCENE = "scene";
         public static final String PARENTS = "parents";
         public static final String CHILDREN = "children";
-
-        public static final String CREATE_TABLE =
-                "CREATE TABLE IF NOT EXISTS " + TABLE + " (" +
-                        _ID + " INTEGER PRIMARY KEY, " +
-                        SCENE + " TEXT, " +
-                        PARENTS + " TEXT, " +
-                        CHILDREN + " TEXT" + ")";
     }
 }

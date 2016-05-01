@@ -33,7 +33,6 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
 
     private int lastGroupToExpand;
 
-    public static int lastClickedHeadPos;
     public static int lastClickedSubHeadPos;
 
     public static int REGULAR = 0;
@@ -51,7 +50,6 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         this.context = context;
         this.headers = headers;
         this.assignSub = assignSub;
-        this.lastClickedSubHeadPos = -1;   //no new header position as default
         this.inflater = (LayoutInflater)this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.expandableListView = eLView;
     }
@@ -69,6 +67,10 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
 
     public int getLastGroupToExpand(){
         return this.lastGroupToExpand;
+    }
+
+    public void setLastGroupToExpand(int groupPosition){
+        this.lastGroupToExpand = groupPosition;
     }
 
     @Override
@@ -180,6 +182,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
             holder.button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //add group delete button
                     SceneTreeBuilder treeBuilder = MainActivity.getTreeBuilder();
                     ExpandListAdapter expandListAdapter = MainActivity.getExpandListAdapter();
                     treeBuilder.deleteHeader(expandListAdapter, groupPosition);
@@ -219,9 +222,6 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
 
         //set add inset scene option view if -1 scene flag is set (scene has no real database ID)
         if(scene.getId() == -1){
-            //set the position in the arrays for the new scene view
-            lastClickedHeadPos = groupPosition;
-            lastClickedSubHeadPos = childPosition;
 
             toInflate = R.layout.option_header;
             //get our view if null and then inflate
@@ -270,7 +270,12 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
         expandableListView.collapseGroup(lastGroupToExpand);
     }
 
-    public void swapHeaderWithSubHeader(int groupPosition, int childPosition){
+    public void expandGroup(int group){
+        if(group > -1 && group < getGroupCount())
+            expandableListView.expandGroup(group);
+    }
+
+    public void swapGroupWithChild(int groupPosition, int childPosition){
         Scene subScene = getChild(groupPosition, childPosition);
         Scene header = getGroup(groupPosition);
         List<Scene> subScenes = getChildren(groupPosition);
@@ -301,6 +306,15 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
 
     public void removeChild(int groupPosition, int childPosition){
         getChildren(groupPosition).remove(childPosition);
+    }
+
+    public void swapGroups(int group1Position, int group2Position){
+        Scene scene1 = getGroup(group1Position);
+        Scene scene2 = getGroup(group2Position);
+        headers.remove(group1Position);
+        this.headers.add(group1Position, scene2);
+        headers.remove(group2Position);
+        this.headers.add(group2Position, scene1);
     }
 
     private void log(String s){
