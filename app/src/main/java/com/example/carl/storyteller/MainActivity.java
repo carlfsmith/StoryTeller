@@ -1,6 +1,5 @@
 package com.example.carl.storyteller;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,17 +9,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -220,8 +218,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case R.id.new_subhead_btn:
                 //Add new subHeader
                 //change popup title from default
-                TextView textView2 = (TextView)popup.findViewById(R.id.textView);
-                textView2.setText("New Branch");
+                ((TextView)popup.findViewById(R.id.popup_textview)).setText("New Branch");
                 //create popup with unique positive button
                 createPopup(popup, new DialogInterface.OnClickListener() {
                     @Override
@@ -333,10 +330,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         View popup = inflater.inflate(R.layout.popup, null);
+        //remove unnecessary cloud UI elements
+
         final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
         eText.setText(s.getContent());
         //change popup title from default
-        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        TextView textView = (TextView)popup.findViewById(R.id.popup_textview);
         textView.setText("Edit Scene");
         //create popup with unique positive button
         createPopup(popup, new DialogInterface.OnClickListener() {
@@ -356,10 +355,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onLongClick(View v) {
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         View popup = inflater.inflate(R.layout.popup, null);
+        //hide unnecessary cloud UI features.
+        ((EditText)popup.findViewById(R.id.popup_edit_text)).setVisibility(EditText.GONE);
+        ((ImageButton)popup.findViewById(R.id.cloud_btn)).setVisibility(ImageButton.GONE);
+
         final EditText eText = (EditText)popup.findViewById(R.id.popup_add_text);
         eText.setText(this.title);
         //change popup title from default
-        TextView textView = (TextView)popup.findViewById(R.id.textView);
+        TextView textView = (TextView)popup.findViewById(R.id.popup_textview);
         textView.setText("Change Story's Name");
         //create popup with unique positive button
         createPopup(popup, new DialogInterface.OnClickListener() {

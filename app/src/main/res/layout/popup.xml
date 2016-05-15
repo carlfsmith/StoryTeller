@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#d5bf8b"
@@ -9,13 +9,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/popup_default_title"
-        android:id="@+id/textView"
+        android:id="@+id/popup_textview"
         android:textColor="#ffffff"
         android:textSize="30dp"
         android:textStyle="bold"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:paddingLeft="20dp" />
+        android:paddingLeft="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="33dp"
+        android:id="@+id/popup_edit_text"
+        android:layout_gravity="center"
+        android:background="#ffffff"
+        android:paddingLeft="14dp"
+        android:singleLine="true"
+        android:maxLines="1"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_below="@+id/popup_textview"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:textColor="#000000"
+        android:gravity="left|center_vertical"
+        android:hint="enter, tags, as, such, .."
+        android:textColorHint="#AAAAAA"
+        android:paddingRight="14dp" />
 
     <EditText
         android:layout_width="match_parent"
@@ -25,14 +49,30 @@
         android:id="@+id/popup_add_text"
         android:layout_gravity="center_horizontal"
         android:background="#ffffff"
-        android:hint="add text here..."
         android:gravity="top"
         android:paddingLeft="20dp"
         android:paddingTop="10dp"
         android:paddingRight="20dp"
         android:paddingBottom="10dp"
-        android:textColor="#000000" />
+        android:textColor="#000000"
+        android:layout_marginLeft="0dp"
+        android:layout_below="@+id/popup_edit_text"
+        android:layout_alignParentStart="true"
+        android:hint="add text here"
+        android:textColorHint="#AAAAAA" />
+
+    <ImageButton
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:id="@+id/cloud_btn"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="6dp"
+        android:layout_marginRight="4dp"
+        android:focusable="false"
+        android:scaleType="fitCenter"
+        android:clickable="false"
+        android:background="@drawable/ic_action_file_cloud_queue2" />
 
 
-
-</LinearLayout>
+</RelativeLayout>

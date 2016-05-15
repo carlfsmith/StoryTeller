@@ -95,8 +95,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter {
     @Override
     public int getGroupType(int groupPosition) {
         //flips an internal switch to alert the adapter that a new view is coming into the list
-        int id = this.getGroup(groupPosition).getId();
-        if(id != -1){
+        if(getChildrenCount(groupPosition) > 1){
             return this.REGULAR;
         }
         else{

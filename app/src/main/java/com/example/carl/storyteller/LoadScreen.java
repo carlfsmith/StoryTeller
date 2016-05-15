@@ -160,12 +160,16 @@ public class LoadScreen extends AppCompatActivity implements AdapterView.OnItemS
                 if(tableName.length() > 0){
                     //check if tableName is not in our list of tablenames
                     if(!tables.contains(tableName)){
+                        String title = tableName;
+                        title = WordUtils.capitalize(title);
                         tableName = tableName.replaceAll(" ", "_");
                         tableName = "\'"+tableName+"\'";
                         //set tableName
                         SceneContact.TABLE = tableName;
                         //the new activity will generate the new table
-                        startActivity(new Intent(this, MainActivity.class));
+                        Intent intent = new Intent(this, MainActivity.class);
+                        intent.putExtra("storyName", title);
+                        startActivity(intent);
                     }
                     else{//if it is tell user
                         Toast.makeText(this, "Story name is being used",

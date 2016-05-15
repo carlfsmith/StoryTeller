@@ -31,7 +31,7 @@
         android:layout_height="60dp"
         android:id="@+id/deleteStoryBtn"
         android:focusable="false"
-        android:background="@drawable/delete_btn_shape"
+        android:background="@drawable/generic_btn_shape"
         android:src="@android:drawable/ic_delete"
         android:layout_below="@+id/header_divider"
         android:layout_alignParentEnd="true"
